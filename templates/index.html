@@ -13,17 +13,45 @@
             width: 40px;
             height: 40px;
             text-align: center;
+            position: relative;
         }
         input {
-            width: 30px;
-            height: 30px;
+            width: 38px;
+            height: 38px;
             text-align: center;
+            border: none;
         }
+
+        /* Highlighting the rule of thirds: thicker borders for 3x3 subgrids */
+        td:nth-child(3n) {
+            border-right: 3px solid black;
+        }
+        tr:nth-child(3n) td {
+            border-bottom: 3px solid black;
+        }
+        td:nth-child(1) {
+            border-left: 3px solid black;
+        }
+        tr:nth-child(1) td {
+            border-top: 3px solid black;
+        }
+
+        /* Styling the buttons */
+        .buttons {
+            margin-top: 10px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
     </style>
 </head>
 <body>
     <h1>Sudoku Solver</h1>
-    <form action="/solve" method="POST">
+    <form action="/solve" method="POST" id="sudoku-form">
         <table>
             {% for row in range(9) %}
             <tr>
@@ -35,10 +63,23 @@
             </tr>
             {% endfor %}
         </table>
-        <button type="submit">Solve</button>
+
+        <div class="buttons">
+            <button type="submit">Solve</button>
+            <button type="button" onclick="clearBoard()">Clear Board</button>
+        </div>
     </form>
+
     {% if error %}
     <p style="color: red;">{{ error }}</p>
     {% endif %}
+
+    <script>
+        function clearBoard() {
+            // Get all input fields and set their value to an empty string
+            const inputs = document.querySelectorAll('input[name="board[]"]');
+            inputs.forEach(input => input.value = '');
+        }
+    </script>
 </body>
 </html>
