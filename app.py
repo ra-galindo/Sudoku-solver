@@ -1,7 +1,9 @@
 from flask import Flask, render_template, request
+from flask_frozen import Freezer
 from sudoku_solver import solve_sudoku
 
 app = Flask(__name__)
+freezer = Freezer(app)
 
 @app.route('/')
 def index():
@@ -21,6 +23,13 @@ def solve():
     else:
         return render_template('index.html', board=None, error="No solution exists")
 
+# Command to freeze the app and generate static files
+if __name__ == '__main__':
+    app.run(debug=True)
+    
+@freezer.register_generator
+def url_generator():
+    yield '/'
 
 if __name__ == '__main__':
     app.run(debug=True)
