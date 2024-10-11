@@ -30,6 +30,3 @@ if __name__ == '__main__':
 @freezer.register_generator
 def url_generator():
     yield '/'
-
-if __name__ == '__main__':
-    app.run(debug=True)
