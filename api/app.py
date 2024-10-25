@@ -1,9 +1,9 @@
 # app.py
-
+import os
 from flask import Flask, render_template, request, jsonify
 from sudoku_solver import solve_sudoku, is_valid  # Use relative import
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder=os.path.abspath('templates'))
 
 def is_sudoku_valid(board):
     """Check if the initial Sudoku puzzle configuration is valid."""
