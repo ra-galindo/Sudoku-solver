@@ -1,23 +1,8 @@
-# app.py
-
-from flask import Flask, render_template, request, jsonify
 import os
+from flask import Flask, render_template, request, jsonify
 from sudoku_solver import solve_sudoku, is_valid  # Use relative import
 
-app = Flask(__name__, template_folder='templates')
-
-def is_sudoku_valid(board):
-    """Check if the initial Sudoku puzzle configuration is valid."""
-    for row in range(9):
-        for col in range(9):
-            num = board[row][col]
-            if num != 0:
-                # Temporarily clear the cell to check the rest of the board
-                board[row][col] = 0
-                if not is_valid(board, row, col, num):
-                    return False
-                board[row][col] = num
-    return True
+app = Flask(__name__, template_folder=os.path.abspath('templates'))
 
 @app.route('/')
 def index():
