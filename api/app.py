@@ -1,7 +1,7 @@
 # app.py
 
 from flask import Flask, render_template, request, jsonify
-from api.sudoku_solver import solve_sudoku, is_valid
+from sudoku_solver import solve_sudoku, is_valid  # Use relative import
 
 app = Flask(__name__)
 
