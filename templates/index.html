@@ -5,81 +5,141 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sudoku Solver</title>
     <style>
+        #sudoku-board {
+            display: inline-block;
+            margin: 20px;
+        }
         table {
             border-collapse: collapse;
         }
         td {
-            border: 1px solid #000;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             text-align: center;
-            position: relative;
+            border: 1px solid black;
+            padding: 0;
         }
-        input {
-            width: 38px;
-            height: 38px;
+        input[type="number"] {
+            width: 100%;
+            height: 100%;
             text-align: center;
+            font-size: 18px;
+            outline: none;
             border: none;
+            box-sizing: border-box;
         }
-
-        /* Highlighting the rule of thirds: thicker borders for 3x3 subgrids */
-        td:nth-child(3n) {
-            border-right: 3px solid black;
-        }
-        tr:nth-child(3n) td {
-            border-bottom: 3px solid black;
-        }
-        td:nth-child(1) {
-            border-left: 3px solid black;
-        }
-        tr:nth-child(1) td {
+        tr:first-child td {
             border-top: 3px solid black;
         }
-
-        /* Styling the buttons */
-        .buttons {
-            margin-top: 10px;
+        tr:last-child td {
+            border-bottom: 3px solid black;
+        }
+        td:first-child {
+            border-left: 3px solid black;
+        }
+        td:last-child {
+            border-right: 3px solid black;
+        }
+        tr:nth-child(3) td, tr:nth-child(6) td {
+            border-bottom: 3px solid black;
+        }
+        td:nth-child(3), td:nth-child(6) {
+            border-right: 3px solid black;
+        }
+        #controls {
+            margin-top: 20px;
         }
         button {
-            margin: 5px;
-            padding: 10px;
             font-size: 16px;
+            padding: 10px;
+            margin-right: 5px;
             cursor: pointer;
         }
-
+        /* Style for the message display area */
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: red;
+        }
     </style>
+    <script>
+        function displayMessage(message, color = 'red') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = message;
+            messageDiv.style.color = color;  // Default color is red, for errors
+        }
+
+        async function solveSudoku() {
+            const board = [];
+            for (let i = 0; i < 9; i++) {
+                const row = [];
+                for (let j = 0; j < 9; j++) {
+                    const value = document.getElementById(`cell-${i}-${j}`).value;
+                    row.push(value ? parseInt(value) : 0);
+                }
+                board.push(row);
+            }
+
+            const response = await fetch('/solve', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ puzzle: board })
+            });
+
+            const data = await response.json();
+            if (data.solution) {
+                for (let i = 0; i < 9; i++) {
+                    for (let j = 0; j < 9; j++) {
+                        document.getElementById(`cell-${i}-${j}`).value = data.solution[i][j];
+                    }
+                }
+                displayMessage('Sudoku solved successfully!', 'green');  // Success message in green
+            } else {
+                displayMessage(data.error || "This puzzle is unsolvable.");
+            }
+        }
+
+        function resetBoard() {
+            for (let i = 0; i < 9; i++) {
+                for (let j = 0; j < 9; j++) {
+                    document.getElementById(`cell-${i}-${j}`).value = '';
+                }
+            }
+            displayMessage('');  // Clear the message when the board is reset
+        }
+
+        function showInfo() {
+            const infoMessage = "Sudoku Solver Instructions:\n\n" +
+                                "1. Enter numbers from 1 to 9 in the grid.\n" +
+                                "2. Click 'Solve Sudoku' to find the solution.\n" +
+                                "3. If the puzzle is unsolvable, you will be notified.\n" +
+                                "4. Use the 'Reset Board' button to clear all inputs.";
+            displayMessage(infoMessage, 'blue');  // Info message in blue
+        }
+    </script>
 </head>
 <body>
     <h1>Sudoku Solver</h1>
-    <form action="/solve" method="POST" id="sudoku-form">
+    <div id="sudoku-board">
         <table>
-            {% for row in range(9) %}
-            <tr>
-                {% for col in range(9) %}
-                <td>
-                    <input type="text" name="board[]" maxlength="1" value="{{ board[row][col] if board else '' }}">
-                </td>
-                {% endfor %}
-            </tr>
+            {% for i in range(9) %}
+                <tr>
+                    {% for j in range(9) %}
+                        <td>
+                            <input type="number" id="cell-{{ i }}-{{ j }}" min="1" max="9">
+                        </td>
+                    {% endfor %}
+                </tr>
             {% endfor %}
         </table>
-
-        <div class="buttons">
-            <button type="submit">Solve</button>
-            <button type="button" onclick="clearBoard()">Clear Board</button>
-        </div>
-    </form>
-
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
-    {% endif %}
-
-    <script>
-        function clearBoard() {
-            // Get all input fields and set their value to an empty string
-            const inputs = document.querySelectorAll('input[name="board[]"]');
-            inputs.forEach(input => input.value = '');
-        }
-    </script>
+    </div>
+    <div id="controls">
+        <button onclick="solveSudoku()">Solve Sudoku</button>
+        <button onclick="resetBoard()">Reset Board</button>
+        <button onclick="showInfo()">Info</button>
+    </div>
+    <div id="message"></div>  <!-- Message area -->
 </body>
 </html>

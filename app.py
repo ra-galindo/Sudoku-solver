@@ -1,35 +1,44 @@
-from flask import Flask, render_template, request
-from flask_frozen import Freezer
-from sudoku_solver import solve_sudoku
+# app.py
+
+from flask import Flask, render_template, request, jsonify
+from sudoku_solver import solve_sudoku, is_valid
 
 app = Flask(__name__)
-freezer = Freezer(app)
+
+def is_sudoku_valid(board):
+    """Check if the initial Sudoku puzzle configuration is valid."""
+    for row in range(9):
+        for col in range(9):
+            num = board[row][col]
+            if num != 0:
+                # Temporarily clear the cell to check the rest of the board
+                board[row][col] = 0
+                if not is_valid(board, row, col, num):
+                    return False
+                board[row][col] = num
+    return True
 
 @app.route('/')
 def index():
+    """Render the main page with an input form."""
     return render_template('index.html')
 
 @app.route('/solve', methods=['POST'])
 def solve():
-    # Get the board input from the form
-    board = request.form.getlist('board[]')
-    
-    # Convert the input strings to integers, and replace empty strings with 0
-    board = [list(map(lambda x: int(x) if x else 0, board[i:i+9])) for i in range(0, 81, 9)]
-    
-    # Try to solve the Sudoku puzzle
-    if solve_sudoku(board):
-        return render_template('index.html', board=board)
-    else:
-        return render_template('index.html', board=None, error="No solution exists")
+    """Receive and solve the Sudoku puzzle."""
+    data = request.json.get('puzzle')
+    if not data or len(data) != 9 or any(len(row) != 9 for row in data):
+        return jsonify({"error": "Invalid input. The board must be 9x9."}), 400
 
-# Command to freeze the app and generate static files
-if __name__ == '__main__':
-    app.run(debug=True)
-    
-@freezer.register_generator
-def url_generator():
-    yield '/'
+    board = [[int(num) for num in row] for row in data]
+    # Check if the initial board configuration is valid
+    if not is_sudoku_valid(board):
+        return jsonify({"error": "This puzzle is unsolvable."}), 400
+
+    if solve_sudoku(board):
+        return jsonify({"solution": board})
+    else:
+        return jsonify({"error": "This puzzle is unsolvable."}), 400
 
 if __name__ == '__main__':
     app.run(debug=True)
