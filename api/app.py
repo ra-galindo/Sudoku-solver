@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template, request, jsonify
-from sudoku_solver import solve_sudoku, is_valid  # Use relative import
+from sudoku_solver import solve_sudoku, is_valid
 
 app = Flask(__name__, template_folder=os.path.abspath('templates'))
 
@@ -18,7 +18,7 @@ def solve():
 
     board = [[int(num) for num in row] for row in data]
     # Check if the initial board configuration is valid
-    if not is_sudoku_valid(board):
+    if not is_valid(board):
         return jsonify({"error": "This puzzle is unsolvable."}), 400
 
     if solve_sudoku(board):
